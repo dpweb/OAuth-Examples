@@ -30,29 +30,29 @@ function search(token){
 ````
 OR
 ````
-function T(cons_key, cons_secret){
+function T(cons_key, cons_secret){		
+	var r = require('request'), tok;
 	return {
-		r: require('request'),
 		tok: null,
 		api: function(name, cb){
 			var th = this;
 			if(!this.tok){
-				this.r.post({url: 'https://api.twitter.com/oauth2/token/', 
+				r.post({url: 'https://api.twitter.com/oauth2/token/', 
 				headers: {Authorization: 'Basic ' + new Buffer(cons_key +':'+ cons_secret).toString('base64')},
 				form: {grant_type: 'client_credentials'}
    				}, function(e,r,b){th.tok=JSON.parse(b).access_token; th.api(name, cb)});
    				return;
     		}
-			this.r.get({
-				url: 'https://api.twitter.com/1.1/search/tweets.json?q=javascript',
+			r.get({
+				url: 'https://api.twitter.com/1.1/'+name,
 				headers: {Authorization: 'Bearer ' + th.tok}
 			}, function(e,r,b){cb(JSON.parse(b))})
 		}
 	}
 }
 
-var tw = T('consumer_key', 'consumer_secret');
-tw.api('search/tweets.json?q=javascript', function(r){
+var tw = T('', '');
+tw.api('search/tweets.json?q=java', function(r){
 	console.log(r)
 });
 ````
