@@ -31,7 +31,7 @@ function search(token){
 OR
 ````
 function T(cons_key, cons_secret){		
-	var r = require('request'), tok;
+	var r = require('request');
 	return {
 		tok: null,
 		api: function(name, cb){
