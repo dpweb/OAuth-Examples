@@ -1,12 +1,4 @@
-// OAuth 1.0 
-
-var tw = T1(require('./config.json'));
-var x = tw.asCurl('GET', 'https://api.twitter.com/1.1/search/tweets.json', 'q=javascript');
-console.log(x);
-//tw.api('GET', 'https://api.twitter.com/1.1/search/tweets.json', 'q=javascript', console.log);
-
-
-function T1(config){
+function OAuth1(config){
 	var r = require('request'), Hashes = require('jshashes'), eu = encodeURIComponent, util = require('util');
 	return {
         calcHeaders: function(method, url, data){
@@ -38,4 +30,35 @@ function T1(config){
             return util.format("curl --get '%s' --data '%s' --header '%s' --verbose", url, data, ast.join(', '));
         }
 	}
+}
+
+// OAuth 2.0 Client Credentials Grant - aka Twitter Application-Only Auth
+//   http://tools.ietf.org/html/rfc6749#section-4.4
+//   https://dev.twitter.com/docs/auth/application-only-auth
+
+function OAuth2(config){
+    var r = require('request');
+    return {
+        tok: null,
+        api: function(name, cb){
+            var th = this;
+            if(!this.tok){
+                r.post({url: this.token_url,
+                    headers: {Authorization: 'Basic ' + new Buffer(config.oauth_consumer_key +':'+ config.consumer_secret).toString('base64')},
+                    form: {grant_type: 'client_credentials'}
+                }, function(e,r,b){console.log(b); th.tok=JSON.parse(b).access_token; th.api(name, cb)});
+                return;
+            }
+            r.get({
+                url: name,
+                headers: {Authorization: 'Bearer ' + th.tok}
+            }, function(e,r,b){cb(JSON.parse(b))})
+        },
+        token_url: ''
+    }
+}
+
+module.exports = {
+    OAuth1: OAuth1,
+    OAuth2: OAuth2
 }
